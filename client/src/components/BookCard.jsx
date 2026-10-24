@@ -1,5 +1,7 @@
 import { Link } from "react-router-dom";
 
+const API_BASE_URL = (import.meta.env.VITE_API_URL || "http://localhost:5000").replace(/\/$/, "");
+
 const BookCard = ({ book, issueBook, user, isLoggedIn }) => {
   const inStock = book.availableCopies > 0;
 
@@ -14,7 +16,7 @@ const BookCard = ({ book, issueBook, user, isLoggedIn }) => {
         <img
   src={
     book.coverImage
-      ? `http://localhost:5000${book.coverImage}`
+      ? `${API_BASE_URL}${book.coverImage}`
       : "/images/default-book.jpg"
   }
   alt={book.title}
@@ -70,7 +72,6 @@ const BookCard = ({ book, issueBook, user, isLoggedIn }) => {
             )}
           </div>
 
-          {/* Show Issue button ONLY for students */}
           {user?.role !== "admin" && (
             isLoggedIn ? (
               <button

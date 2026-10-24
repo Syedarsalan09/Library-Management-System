@@ -1,8 +1,5 @@
 import api from "./api";
 
-// ===============================
-// Issue a Book
-// ===============================
 export const issueBook = async ({ bookId }) => {
   const response = await api.post("/issues", {
     bookId,
@@ -11,9 +8,6 @@ export const issueBook = async ({ bookId }) => {
   return response.data;
 };
 
-// ===============================
-// Return a Book
-// ===============================
 export const returnBook = async (issueId) => {
   const response = await api.put(
     `/issues/${issueId}/return`
@@ -22,9 +16,6 @@ export const returnBook = async (issueId) => {
   return response.data;
 };
 
-// ===============================
-// Get My Issued Books
-// ===============================
 export const getMyBooks = async (
   page = 1,
   limit = 5,
@@ -43,9 +34,6 @@ export const getMyBooks = async (
   return response.data;
 };
 
-// ===============================
-// Admin - Get All Issued Books
-// ===============================
 export const getAllIssues = async () => {
   const response = await api.get("/issues");
 

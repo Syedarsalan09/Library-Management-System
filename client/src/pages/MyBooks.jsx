@@ -1,12 +1,9 @@
 import { useState, useEffect } from "react";
 
-import {
-  returnBook as returnBookAPI,
-} from "../services/issueService";
+import { returnBook as returnBookAPI } from "../services/issueService";
+import { getCategories } from "../services/bookService";
 
-import {
-  getCategories,
-} from "../services/bookService";
+const API_BASE_URL = (import.meta.env.VITE_API_URL || "http://localhost:5000").replace(/\/$/, "");
 
 const MyBooks = ({
   myBooks,
@@ -29,11 +26,7 @@ const MyBooks = ({
   const [categories, setCategories] =
     useState(["All"]);
 
-  // ===============================
-  // Search / Filter / Sort
-  // ===============================
-
- useEffect(() => {
+  useEffect(() => {
   const timer = setTimeout(() => {
     loadMyBooks(
       1,
@@ -41,7 +34,7 @@ const MyBooks = ({
       category,
       sortBy
     );
-  }, 500);
+  }, 300);
 
   return () => clearTimeout(timer);
 }, [
@@ -50,10 +43,6 @@ const MyBooks = ({
   sortBy,
   loadMyBooks
 ]);
-
-  // ===============================
-  // Load Categories
-  // ===============================
 
   useEffect(() => {
     const loadCategories = async () => {
@@ -75,10 +64,6 @@ const MyBooks = ({
 
     loadCategories();
   }, []);
-
-  // ===============================
-  // Return Book
-  // ===============================
 
   const returnBook = async (issueId) => {
     try {
@@ -103,10 +88,6 @@ const MyBooks = ({
     }
   };
 
-  // ===============================
-  // Statistics
-  // ===============================
-
   const issuedBooks = myBooks.filter(
     (book) =>
       book.status === "issued"
@@ -125,10 +106,6 @@ const MyBooks = ({
         📖 My Books
       </h2>
 
-      {/* ===============================
-          Search / Filter / Sort
-      =============================== */}
-
       <div className="row mb-4">
 
         <div className="col-md-5">
@@ -136,7 +113,7 @@ const MyBooks = ({
       <input
   type="text"
   className="form-control"
-  placeholder="🔍 Search by title, author or category..."
+  placeholder="🔍 Search by title, author, category, publisher or ISBN..."
   value={search}
   onChange={(e) => setSearch(e.target.value)}
 />
@@ -202,10 +179,6 @@ const MyBooks = ({
 
       </div>
 
-      {/* ===============================
-          Statistics
-      =============================== */}
-
       <div className="row mb-4">
 
         <div className="col-md-4">
@@ -257,10 +230,6 @@ const MyBooks = ({
         </div>
 
       </div>
-
-      {/* ===============================
-          Books
-      =============================== */}
 
       {loadingMyBooks ? (
         <div className="text-center mt-5">
@@ -317,9 +286,9 @@ const MyBooks = ({
 
             const coverImage =
               issue.book?.coverImage
-                ? `http://localhost:5000${issue.book.coverImage}`
+                ? `${API_BASE_URL}${issue.book.coverImage}`
                 : issue.bookSnapshot?.coverImage
-                ? `http://localhost:5000${issue.bookSnapshot.coverImage}`
+                ? `${API_BASE_URL}${issue.bookSnapshot.coverImage}`
                 : "/images/default-book.jpg";
 
             return (
@@ -503,10 +472,6 @@ const MyBooks = ({
 
       )}
 
-      {/* ===============================
-          Pagination
-      =============================== */}
-
       {totalPages > 1 && (
 
         <nav
@@ -514,8 +479,6 @@ const MyBooks = ({
         >
 
           <ul className="pagination justify-content-center mt-4">
-
-            {/* Previous */}
 
             <li
               className={`page-item ${
@@ -543,8 +506,6 @@ const MyBooks = ({
               </button>
 
             </li>
-
-            {/* Page Numbers */}
 
             {Array.from(
               {
@@ -580,8 +541,6 @@ const MyBooks = ({
               </li>
 
             ))}
-
-            {/* Next */}
 
             <li
               className={`page-item ${

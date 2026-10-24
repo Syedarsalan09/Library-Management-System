@@ -6,6 +6,8 @@ import {
   getCategories,
 } from "../services/bookService";
 
+const API_BASE_URL = (import.meta.env.VITE_API_URL || "http://localhost:5000").replace(/\/$/, "");
+
 import {
   downloadUsersReport,
   downloadBooksReport,
@@ -40,11 +42,9 @@ import { sendReminderEmails } from "../services/reminderService";
   const [isBookFormOpen, setIsBookFormOpen] = useState(false);
 
   useEffect(() => {
-  const timer = setTimeout(() => {
-    if (search.trim() !== "") {
+    const timer = setTimeout(() => {
       loadBooks(1, search);
-    }
-  }, 300);
+    }, 300);
 
   return () => clearTimeout(timer);
 }, [search, loadBooks]);
@@ -90,16 +90,6 @@ if (
   alert("Please fill all required fields.");
   return;
 }
-
-    // const alreadyExists = books.some(
-    //    (book) =>
-    //       book.title.toLowerCase() === title.toLowerCase()
-    //  );
-
-    //    if (alreadyExists) {
-    //    alert("Book already exists.");
-    //   return;
-    // }
 
       try {
       const formData = new FormData();
@@ -185,17 +175,6 @@ alert("Book Deleted Successfully!");
     return;
   }
 
-  // const alreadyExists = books.some(
-  //   (book) =>
-  //     book._id !== editId &&
-  //     book.title.toLowerCase() === title.toLowerCase()
-  // );
-
-  // if (alreadyExists) {
-  //   alert("Book already exists.");
-  //   return;
-  // }
-
   try {
     const formData = new FormData();
 
@@ -208,7 +187,6 @@ alert("Book Deleted Successfully!");
     formData.append("totalCopies", quantity);
     formData.append("description", description);
 
-    // Upload new image only if a file is selected
     if (image instanceof File) {
       formData.append("coverImage", image);
     }
@@ -227,12 +205,6 @@ alert("Book Deleted Successfully!");
     );
   }
 };  
-
-  //   const filteredBooks = books.filter((book) =>
-  //   book.title.toLowerCase().includes(search.trim().toLowerCase()) ||
-  //   book.author.toLowerCase().includes(search.trim().toLowerCase()) ||
-  //   book.category.toLowerCase().includes(search.trim().toLowerCase())
-  // );
 
   const totalTitles = totalBooks;
   const totalCopies = books.reduce(
@@ -314,7 +286,7 @@ const handleSendReminders = async () => {
        <input
          type="text"
          className="form-control"
-         placeholder="🔍 Search by title, author or category..."
+         placeholder="🔍 Search by title, author, category, publisher or ISBN..."
          value={search}
          onChange={(e) => setSearch(e.target.value)}
        />
@@ -634,7 +606,7 @@ const handleSendReminders = async () => {
       <img
       src={
           book.coverImage
-          ? `http://localhost:5000${book.coverImage}`
+          ? `${API_BASE_URL}${book.coverImage}`
           : "/images/default-book.jpg"
         }
         alt={book.title}
@@ -706,15 +678,9 @@ const handleSendReminders = async () => {
 
   </div>
 
-  {/* ==============================
-    Admin Books Pagination
-============================== */}
-
 {totalPages > 1 && (
   <nav aria-label="Admin books pagination">
     <ul className="pagination justify-content-center mt-4">
-
-      {/* Previous */}
 
       <li
         className={`page-item ${
@@ -731,8 +697,6 @@ const handleSendReminders = async () => {
           Previous
         </button>
       </li>
-
-      {/* Page Numbers */}
 
       {Array.from(
         { length: totalPages },
@@ -752,8 +716,6 @@ const handleSendReminders = async () => {
           </button>
         </li>
       ))}
-
-      {/* Next */}
 
       <li
         className={`page-item ${

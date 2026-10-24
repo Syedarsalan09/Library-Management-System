@@ -24,7 +24,6 @@ export const resetPassword = (
   );
 };
 
-// Change Password
 export const changePassword = (data) => {
   return api.put("/auth/change-password", data);
 };

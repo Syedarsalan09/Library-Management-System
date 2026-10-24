@@ -20,29 +20,21 @@ const Login = ({ setIsLoggedIn, setUser }) => {
   }
 
   try {
-      console.log("Submitting:", {
-      email,
-      password,
-    });
-
       const response = await api.post("/auth/login", {
       email,
       password,
     });
     const { token, user, message } = response.data;
 
-    // Save token and user
     localStorage.setItem("token", token);
     localStorage.setItem("user", JSON.stringify(user));
     localStorage.setItem("isLoggedIn", "true");
 
-    // Update App state
     setIsLoggedIn(true);
     setUser(user);
 
     alert(message);
 
-    // Redirect based on role
     if (user.role === "admin") {
       navigate("/admin");
     } else {
@@ -117,6 +109,11 @@ const Login = ({ setIsLoggedIn, setUser }) => {
                 </button>
 
               </form>
+
+              <p className="text-center mt-3 mb-0">
+                Don't have an account?{" "}
+                <Link to="/register">Register</Link>
+              </p>
 
             </div>
 

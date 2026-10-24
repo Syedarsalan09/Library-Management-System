@@ -1,6 +1,7 @@
 import Book from "../models/Book.js";
 import Issue from "../models/Issue.js";
 import { isValidObjectId } from "../utils/validation.js";
+import { buildBookSearchFilter } from "../utils/bookSearch.js";
 
 // ==============================
 // Add New Book
@@ -236,30 +237,7 @@ export const getBooks = async (req, res) => {
     // Search / Filter Conditions
     // ==============================
 
-    const filter = {};
-
-    if (keyword) {
-      filter.$or = [
-        {
-          title: {
-            $regex: keyword,
-            $options: "i",
-          },
-        },
-        {
-          author: {
-            $regex: keyword,
-            $options: "i",
-          },
-        },
-        {
-          category: {
-            $regex: keyword,
-            $options: "i",
-          },
-        },
-      ];
-    }
+    const filter = buildBookSearchFilter(keyword);
 
     if (category && category !== "All") {
       filter.category = {
@@ -443,30 +421,7 @@ const keyword = req.query.keyword?.trim() || "";
 // Admin Search / Filter
 // ==============================
 
-const filter = {};
-
-if (keyword) {
-  filter.$or = [
-    {
-      title: {
-        $regex: keyword,
-        $options: "i",
-      },
-    },
-    {
-      author: {
-        $regex: keyword,
-        $options: "i",
-      },
-    },
-    {
-      category: {
-        $regex: keyword,
-        $options: "i",
-      },
-    },
-  ];
-}
+const filter = buildBookSearchFilter(keyword);
 
 // ==============================
 // Count Matching Books
@@ -544,30 +499,8 @@ export const getBookById = async (req, res) => {
 // ==============================
 export const searchBooks = async (req, res) => {
   try {
-    const keyword = req.query.keyword || "";
-
-    const books = await Book.find({
-      $or: [
-        {
-          title: {
-            $regex: keyword,
-            $options: "i",
-          },
-        },
-        {
-          author: {
-            $regex: keyword,
-            $options: "i",
-          },
-        },
-        {
-          category: {
-            $regex: keyword,
-            $options: "i",
-          },
-        },
-      ],
-    });
+    const filter = buildBookSearchFilter(req.query.keyword);
+    const books = await Book.find(filter);
 
     res.status(200).json({
       total: books.length,

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Routes, Route } from "react-router-dom";
 
 import Navbar from "./components/Navbar";
@@ -31,10 +31,9 @@ const [totalPages, setTotalPages] = useState(1);
 const [totalBooks, setTotalBooks] = useState(0);
 
 const [books, setBooks] = useState([]);
-
-// ==========================
-// Admin Books Pagination
-// ==========================
+const booksRequestId = useRef(0);
+const adminBooksRequestId = useRef(0);
+const myBooksRequestId = useRef(0);
 
 const [adminBooks, setAdminBooks] = useState([]);
 const [adminCurrentPage, setAdminCurrentPage] = useState(1);
@@ -59,25 +58,43 @@ const [loadingAdminBooks, setLoadingAdminBooks] =
 
 const [loadingMyBooks, setLoadingMyBooks] =
   useState(true);
-  
-  const [isLoggedIn, setIsLoggedIn] = useState(
-    localStorage.getItem("isLoggedIn") === "true"
-  );
 
-  const [user, setUser] = useState(() => {
+  const [isLoggedIn, setIsLoggedIn] = useState(
+  localStorage.getItem("isLoggedIn") === "true" &&
+    Boolean(localStorage.getItem("token"))
+);
+
+ 
+const [user, setUser] = useState(() => {
+  try {
     const savedUser = localStorage.getItem("user");
 
-    return savedUser
-      ? JSON.parse(savedUser)
-      : {
-          name: "",
-          role: "",
-        };
-  });
+    if (!savedUser || savedUser === "undefined") {
+      return { name: "", role: "" };
+    }
 
-  // ==========================
-  // Load Books
-  // ==========================
+    const parsedUser = JSON.parse(savedUser);
+
+    return parsedUser && typeof parsedUser === "object"
+      ? parsedUser
+      : { name: "", role: "" };
+  } catch {
+    return { name: "", role: "" };
+  }
+});
+
+useEffect(() => {
+  const handleUnauthorized = () => {
+    setIsLoggedIn(false);
+    setUser({ name: "", role: "" });
+  };
+
+  window.addEventListener("auth:unauthorized", handleUnauthorized);
+  return () => {
+    window.removeEventListener("auth:unauthorized", handleUnauthorized);
+  };
+}, []);
+
 
 const loadBooks = useCallback(
   async (
@@ -86,6 +103,8 @@ const loadBooks = useCallback(
     category = "All",
     sort = "newest"
   ) => {
+    const requestId = ++booksRequestId.current;
+
     try {
       setLoadingBooks(true);
 
@@ -97,29 +116,35 @@ const loadBooks = useCallback(
         category
       );
 
+      if (requestId !== booksRequestId.current) {
+        return;
+      }
+
       setBooks(response.data.books);
 
       setCurrentPage(response.data.currentPage);
       setTotalPages(response.data.totalPages);
       setTotalBooks(response.data.totalBooks);
     } catch (error) {
-      console.error(error);
+      if (requestId === booksRequestId.current) {
+        console.error(error);
+      }
     } finally {
-      setLoadingBooks(false);
+      if (requestId === booksRequestId.current) {
+        setLoadingBooks(false);
+      }
     }
   },
   []
 );
-
-// ==========================
-// Load All Books For Admin
-// ==========================
 
 const loadAdminBooks = useCallback(
   async (
     page = 1,
     keyword = ""
   ) => {
+    const requestId = ++adminBooksRequestId.current;
+
     try {
       setLoadingAdminBooks(true);
 
@@ -128,6 +153,10 @@ const loadAdminBooks = useCallback(
         5,
         keyword
       );
+
+      if (requestId !== adminBooksRequestId.current) {
+        return;
+      }
 
       setAdminBooks(response.data.books);
 
@@ -143,17 +172,20 @@ const loadAdminBooks = useCallback(
         response.data.totalBooks
       );
     } catch (error) {
-      console.error(error);
+      if (
+        requestId === adminBooksRequestId.current &&
+        error.response?.status !== 401
+      ) {
+        console.error(error);
+      }
     } finally {
-      setLoadingAdminBooks(false);
+      if (requestId === adminBooksRequestId.current) {
+        setLoadingAdminBooks(false);
+      }
     }
   },
   []
 );
-
-  // ==========================
-  // Load My Books
-  // ==========================
 
   const loadMyBooks = useCallback(
   async (
@@ -162,6 +194,8 @@ const loadAdminBooks = useCallback(
     category = "All",
     sort = "newest"
   ) => {
+    const requestId = ++myBooksRequestId.current;
+
     if (user.role === "admin") {
       setMyBooks([]);
       setLoadingMyBooks(false);
@@ -179,6 +213,10 @@ const loadAdminBooks = useCallback(
         sort
       );
 
+      if (requestId !== myBooksRequestId.current) {
+        return;
+      }
+
       setMyBooks(response.issues);
 
       setMyBooksCurrentPage(
@@ -193,17 +231,20 @@ const loadAdminBooks = useCallback(
         response.total
       );
     } catch (error) {
-      console.error(error);
+      if (
+        requestId === myBooksRequestId.current &&
+        error.response?.status !== 401
+      ) {
+        console.error(error);
+      }
     } finally {
-      setLoadingMyBooks(false);
+      if (requestId === myBooksRequestId.current) {
+        setLoadingMyBooks(false);
+      }
     }
   },
   [user.role]
 );
-
-  // ==========================
-  // Initial Load
-  // ==========================
 
 useEffect(() => {
   const timer = setTimeout(() => {
@@ -224,10 +265,6 @@ useEffect(() => {
   loadMyBooks,
   loadAdminBooks,
 ]);
-
-  // ==========================
-  // Save Login State
-  // ==========================
 
   useEffect(() => {
     localStorage.setItem(

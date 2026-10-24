@@ -8,15 +8,11 @@ const Navbar = ({
 }) => {
   const navigate = useNavigate();
 
-
-
   const logout = () => {
-    // Clear local storage
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     localStorage.removeItem("isLoggedIn");
 
-    // Reset state
     setIsLoggedIn(false);
     setUser({
       name: "",

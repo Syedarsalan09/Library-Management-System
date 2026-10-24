@@ -1,10 +1,11 @@
 import axios from "axios";
 
+const API_BASE_URL = (import.meta.env.VITE_API_URL || "http://localhost:5000").replace(/\/$/, "");
+
 const api = axios.create({
-  baseURL: `${process.env.REACT_APP_API_URL}/api`,
+  baseURL: `${API_BASE_URL}/api`,
 });
 
-// Automatically attach JWT token
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
 
@@ -14,5 +15,19 @@ api.interceptors.request.use((config) => {
 
   return config;
 });
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      localStorage.removeItem("isLoggedIn");
+      window.dispatchEvent(new Event("auth:unauthorized"));
+    }
+
+    return Promise.reject(error);
+  }
+);
 
 export default api;

@@ -21,30 +21,26 @@ const Books = ({
   const [categories, setCategories] = useState(["All"]);
 
   useEffect(() => {
-  const timer = setTimeout(() => {
-    loadBooks(1, search, category, sortBy);
-  }, 300);
+    const timer = setTimeout(() => {
+      loadBooks(1, search, category, sortBy);
+    }, 300);
 
-  return () => clearTimeout(timer);
-}, [search, category, sortBy, loadBooks]);
-
+    return () => clearTimeout(timer);
+  }, [search, category, sortBy, loadBooks]);
 
   useEffect(() => {
-  const loadCategories = async () => {
-    try {
-      const response = await getCategories();
+    const loadCategories = async () => {
+      try {
+        const response = await getCategories();
 
-      setCategories([
-        "All",
-        ...response.data.categories,
-      ]);
-    } catch (error) {
-      console.error("Failed to load categories:", error);
-    }
-  };
+        setCategories(["All", ...response.data.categories]);
+      } catch (error) {
+        console.error("Failed to load categories:", error);
+      }
+    };
 
-  loadCategories();
-}, []);
+    loadCategories();
+  }, []);
 
   const issueBook = async (book) => {
     if (user.role === "admin") {
@@ -113,14 +109,12 @@ const Books = ({
         📚 Library Books
       </h2>
 
-      {/* Search */}
-
       <div className="row mb-4">
 
         <div className="col-md-5">
           <input
             className="form-control"
-            placeholder="🔍 Search..."
+            placeholder="🔍 Search by title, author, category, publisher or ISBN..."
             value={search}
             onChange={(e) =>
               setSearch(e.target.value)
@@ -171,8 +165,6 @@ const Books = ({
 
       </div>
 
-      {/* Statistics */}
-
       <div className="row mb-4">
 
         <div className="col-md-4">
@@ -206,8 +198,6 @@ const Books = ({
 
       </div>
 
-      {/* Books */}
-
       <div className="row">
 
         {loadingBooks ? (
@@ -240,14 +230,9 @@ const Books = ({
 
       </div>
 
-      {/* Pagination */}
-
       {totalPages > 1 && (
-        // ✅ CORRECTED: Added missing nav and ul
         <nav aria-label="Books pagination">
           <ul className="pagination justify-content-center mt-4">
-
-            {/* Previous */}
 
             <li
               className={`page-item ${
@@ -271,8 +256,6 @@ const Books = ({
                 Previous
               </button>
             </li>
-
-            {/* Page Numbers */}
 
             {Array.from(
               { length: totalPages },
@@ -301,8 +284,6 @@ const Books = ({
                 </button>
               </li>
             ))}
-
-            {/* Next */}
 
             <li
               className={`page-item ${

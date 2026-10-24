@@ -1,6 +1,7 @@
 import Issue from "../models/Issue.js";
 import Book from "../models/Book.js";
 import User from "../models/User.js";
+import { matchesBookSearch } from "../utils/bookSearch.js";
 import nodemailer from "nodemailer";
 import { isValidObjectId } from "../utils/validation.js";
 
@@ -356,37 +357,13 @@ export const getMyIssuedBooks = async (req, res) => {
     let filteredIssues = userIssues;
 
     if (keyword) {
-      const searchKeyword =
-        keyword.toLowerCase();
-
       filteredIssues =
         filteredIssues.filter((issue) => {
-          const title =
-            issue.book?.title ||
-            issue.bookSnapshot?.title ||
-            "";
+          const book = issue.book?.toObject
+            ? issue.book.toObject()
+            : issue.bookSnapshot;
 
-          const author =
-            issue.book?.author ||
-            issue.bookSnapshot?.author ||
-            "";
-
-          const issueCategory =
-            issue.book?.category ||
-            issue.bookSnapshot?.category ||
-            "";
-
-          return (
-            title
-              .toLowerCase()
-              .includes(searchKeyword) ||
-            author
-              .toLowerCase()
-              .includes(searchKeyword) ||
-            issueCategory
-              .toLowerCase()
-              .includes(searchKeyword)
-          );
+          return matchesBookSearch(book, keyword);
         });
     }
 
